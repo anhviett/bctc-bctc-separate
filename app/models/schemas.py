@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Dict, Any, List, Optional
 
 class PDFUploadResponse(BaseModel):
     file_name: str = Field(..., description="The name of the uploaded PDF file")

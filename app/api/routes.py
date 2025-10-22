@@ -29,7 +29,7 @@ async def upload_pdf(file: UploadFile = File(...)):
         await f.write(content)
     
     return PDFUploadResponse(
-        filename=file.filename,
+        file_name=file.filename,
         message="File uploaded successfully",
         file_id=file_id
     )
@@ -40,13 +40,25 @@ async def ocr_pdf(
     language: str = Query('vie', description="OCR language (vie, eng)")
 ):
     """Perform OCR on uploaded PDF"""
-    file_path = os.path.join(UPLOAD_DIR, f"{file_id}.pdf")
-    
+    clean_id = os.path.basename(file_id.strip().replace("'", "").replace('"', ""))
+    file_path = os.path.join(UPLOAD_DIR, f"{clean_id}.pdf")
     if not os.path.exists(file_path):
         raise HTTPException(404, "File not found")
-    
+
     result = pdf_processor.pdf_to_text(file_path, language)
-    
+    print("OCR result raw:", result)
+
+    if isinstance(result, dict) and isinstance(result.get("pages"), list):
+        all_text = "\n".join([p.get("text", "") for p in result["pages"]])
+        page_count = len(result["pages"])
+        result = {
+            "success": True,
+            "text": all_text,
+            "pages": page_count,
+            "processing_time": result.get("processing_time", 0.0),
+            "error": None
+        }
+
     return OCRResult(**result)
 
 @router.post("/pdf-to-json/{file_id}", response_model=PDFToJSONResponse)

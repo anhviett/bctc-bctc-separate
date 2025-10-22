@@ -16,7 +16,7 @@ services:
     volumes:
       - ./uploads:/app/uploads
       - ./outputs:/app/outputs
-      - .app:/app/app
+      - ./app:/app/app
     environment:
       - PYTHONPATH=/app
     restart: unless-stopped
